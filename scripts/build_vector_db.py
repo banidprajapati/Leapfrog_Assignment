@@ -1,12 +1,21 @@
-import json
+import logging
 import uuid
 from typing import List
 
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, PointStruct, VectorParams
+from qdrant_client.models import (
+    Distance,
+    Document,
+    Modifier,
+    PointStruct,
+    SparseIndexParams,
+    SparseVectorParams,
+    VectorParams,
+)
 from sentence_transformers import SentenceTransformer
 from tqdm import tqdm
 
+logger = logging.getLogger(__name__)
 COLLECTION_NAME = "LF_RAG_System"
 
 
@@ -25,7 +34,9 @@ class VectorDBBuilder:
         )
 
         if embedding_model not in VectorDBBuilder._embedders:
-            VectorDBBuilder._embedders[embedding_model] = SentenceTransformer(embedding_model)
+            VectorDBBuilder._embedders[embedding_model] = SentenceTransformer(
+                embedding_model
+            )
         self.embedder = VectorDBBuilder._embedders[embedding_model]
 
     def create_collection(self, vector_size: int):
@@ -33,18 +44,27 @@ class VectorDBBuilder:
         existing = [c.name for c in collections]
 
         if COLLECTION_NAME in existing:
-            print(f"Collection '{COLLECTION_NAME}' already exists.")
-            return
+            print(f"Collection '{COLLECTION_NAME}' already exists. Recreating...")
+            self.client.delete_collection(COLLECTION_NAME)
+            print("Deleted old collection.")
 
         self.client.create_collection(
             collection_name=COLLECTION_NAME,
-            vectors_config=VectorParams(
-                size=vector_size,
-                distance=Distance.COSINE,
-            ),
+            vectors_config={
+                "dense": VectorParams(
+                    size=vector_size,
+                    distance=Distance.COSINE,
+                )
+            },
+            sparse_vectors_config={
+                "bm25": SparseVectorParams(
+                    modifier=Modifier.IDF,
+                    index=SparseIndexParams(on_disk=False),
+                )
+            },
         )
 
-        print(f"Created collection: {COLLECTION_NAME}")
+        print(f"Created collection: {COLLECTION_NAME} (dense + BM25 sparse vectors)")
 
     def embed_texts(self, texts: List[str]):
         return self.embedder.encode(
@@ -52,10 +72,6 @@ class VectorDBBuilder:
             show_progress_bar=True,
             normalize_embeddings=True,
         )
-
-    def load_chunks(self, chunk_path: str):
-        with open(chunk_path, "r", encoding="utf-8") as f:
-            return json.load(f)
 
     def _normalize_chunk(self, chunk: dict) -> tuple[str, dict, str]:
         """Normalize chunks from preprocess output or legacy format."""
@@ -86,22 +102,36 @@ class VectorDBBuilder:
 
         vector_size = self.embedder.get_sentence_embedding_dimension()
 
+        # Compute average document length for BM25
+        all_texts = []
+        normalized_all = []
+        for chunk in chunks:
+            text, metadata, point_id = self._normalize_chunk(chunk)
+            all_texts.append(text)
+            normalized_all.append((text, metadata, point_id))
+
+        avg_document_length = (
+            sum(len(text.split()) for text in all_texts) / len(all_texts)
+            if all_texts
+            else 0
+        )
+        logger.info(f"Average document length: {avg_document_length:.2f}")
+
         self.create_collection(vector_size)
 
         saved_records = []
 
-        for i in tqdm(range(0, len(chunks), batch_size)):
-            batch = chunks[i : i + batch_size]
+        for i in tqdm(range(0, len(normalized_all), batch_size)):
+            batch = normalized_all[i : i + batch_size]
 
-            normalized_batch = [self._normalize_chunk(chunk) for chunk in batch]
-            texts = [text for text, _, _ in normalized_batch]
-            embeddings = self.embed_texts(texts)
+            texts = [text for text, _, _ in batch]
+            embeddings = self.embedder.encode(
+                texts, show_progress_bar=False, normalize_embeddings=True
+            )
 
             points = []
 
-            for (text, metadata, point_id), embedding in zip(
-                normalized_batch, embeddings
-            ):
+            for (text, metadata, point_id), embedding in zip(batch, embeddings):
                 payload = {
                     "text": text,
                     "metadata": metadata,
@@ -110,7 +140,14 @@ class VectorDBBuilder:
                 points.append(
                     PointStruct(
                         id=point_id,
-                        vector=embedding.tolist(),
+                        vector={
+                            "dense": embedding.tolist(),
+                            "bm25": Document(
+                                text=text,
+                                model="Qdrant/bm25",
+                                options={"avg_len": avg_document_length},
+                            ),
+                        },
                         payload=payload,
                     )
                 )
