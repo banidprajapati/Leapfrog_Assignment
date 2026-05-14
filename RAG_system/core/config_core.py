@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "LF RAG System"
     ENVIRONMENT: str = "dev"
 
-    # AWS configs
+    # ENV configs
     QDRANT_APIKEY: str = Field(..., description="Qdrant API Key")
     QDRANT_CLUSTER_ENDPOINT: str = Field(..., description="Qdrant Cluster Key")
     COLLECTION_NAME: str = Field(..., description="Qdrant DB Collection Name")
