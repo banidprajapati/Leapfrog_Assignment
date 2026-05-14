@@ -22,7 +22,6 @@ def clean_job_description(html_text: str) -> str:
 
 def preprocess_jobs(
     csv_path: str,
-    output_path: str | None = None,
     chunk_size: int = 512,
     chunk_overlap: int = 50,
     cleaned_csv_path: str | None = None,
@@ -35,9 +34,5 @@ def preprocess_jobs(
 
     chunker = Chunker(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
     chunks = [c for _, row in df.iterrows() for c in chunker.chunk_job(row.to_dict())]
-
-    if output_path:
-        with open(output_path, "w", encoding="utf-8") as f:
-            json.dump(chunks, f, indent=2, default=str)
 
     return chunks
