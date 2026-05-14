@@ -69,6 +69,8 @@ class RetrievalService:
             f"Level: {metadata.get('level', '')}",
             f"Category: {metadata.get('category', '')}",
             f"Location: {metadata.get('location', '')}",
+            f"Tags: {metadata.get('tags', '')}",
+            f"Published_date: {metadata.get('publication_date', '')}",
         ]
 
         return "\n".join(meta_parts) + "\n\n" + content
@@ -142,7 +144,8 @@ class RetrievalService:
         try:
             logger.info(f"Starting search for: {query[:100]}")
 
-            candidate_k = min(max(top_k * 12, 40), 300)
+            # max 300 | min 40 chunks
+            candidate_k = min(max(top_k * 20, 40), 300)
             hybrid_candidates = self.vector_search.hybrid_search(
                 query, top_k=candidate_k
             )

@@ -1,7 +1,5 @@
 from openai import OpenAI
 
-from RAG_system.core.config_core import settings
-
 SYSTEM_PROMPT = """
 You are a job search assistant. Answer using ONLY the provided job listings and metadata.
 
@@ -17,14 +15,12 @@ Rules:
 
 
 class RAGService:
-    def __init__(self):
-        self.client = OpenAI(
-            base_url="https://openrouter.ai/api/v1",
-            api_key=settings.OPENROUTER_API,
-        )
-        self.model = "openai/gpt-oss-20b:free"
+    def __init__(self, client: OpenAI):
+        self.client = client
+        self.model = "qwen/qwen-2.5-7b-instruct"
 
     def generate(self, query: str, contexts: list[str]) -> str:
+        # Concatenate retrieved chunks into a single context
         context = "\n\n---\n\n".join(contexts)
 
         response = self.client.chat.completions.create(
@@ -39,4 +35,5 @@ class RAGService:
             max_tokens=600,
             temperature=0.1,
         )
+
         return response.choices[0].message.content.strip()
