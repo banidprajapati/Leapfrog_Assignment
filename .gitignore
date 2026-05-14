@@ -9,5 +9,6 @@ wheels/
 # Virtual environments
 .venv
 .env
-.ipynb
-.txt
+
+*.csv
+*.json
