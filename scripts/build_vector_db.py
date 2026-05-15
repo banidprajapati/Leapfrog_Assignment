@@ -7,6 +7,7 @@ from qdrant_client.models import (
     Distance,
     Document,
     Modifier,
+    PayloadSchemaType,
     PointStruct,
     SparseIndexParams,
     SparseVectorParams,
@@ -26,11 +27,12 @@ class VectorDBBuilder:
         self,
         qdrant_url: str,
         qdrant_api_key: str,
-        embedding_model: str = "BAAI/bge-small-en-v1.5",
+        embedding_model: str = "BAAI/bge-base-en-v1.5",
     ):
         self.client = QdrantClient(
             url=qdrant_url,
             api_key=qdrant_api_key,
+            timeout=120,
         )
 
         if embedding_model not in VectorDBBuilder._embedders:
@@ -64,6 +66,14 @@ class VectorDBBuilder:
             },
         )
 
+        for field in ["metadata.level", "metadata.company"]:
+            self.client.create_payload_index(
+                collection_name=COLLECTION_NAME,
+                field_name=field,
+                field_schema=PayloadSchemaType.KEYWORD,
+            )
+            print(f"Created keyword index on {field}")
+
         print(f"Created collection: {COLLECTION_NAME} (dense + BM25 sparse vectors)")
 
     def embed_texts(self, texts: List[str]):
@@ -96,7 +106,7 @@ class VectorDBBuilder:
         point_id = str(uuid.uuid4())
         return text, metadata, point_id
 
-    def upload_chunks(self, chunks: List[dict], batch_size: int = 64):
+    def upload_chunks(self, chunks: List[dict], batch_size: int = 16):
         if not chunks:
             return []
 

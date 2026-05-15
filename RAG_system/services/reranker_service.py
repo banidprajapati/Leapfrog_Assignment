@@ -2,7 +2,9 @@ import logging
 
 from sentence_transformers import CrossEncoder
 
-logger = logging.getLogger(__name__)
+from RAG_system.core.logging_core import get_logger
+
+logger = get_logger(__name__)
 
 
 class RerankerHandler:

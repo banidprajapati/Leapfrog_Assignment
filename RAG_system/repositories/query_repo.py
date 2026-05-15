@@ -1,5 +1,6 @@
-from typing import List
+from typing import List, Optional
 
+from qdrant_client.models import Filter
 from RAG_system.schemas.response import ChunkResult
 from RAG_system.services.retrieval_service import RetrievalService
 
@@ -8,8 +9,8 @@ class RetrievalRepository:
     def __init__(self):
         self.retrieval = RetrievalService()
 
-    def search_chunks(self, query: str, top_k: int) -> List[ChunkResult]:
-        results = self.retrieval.search(query, top_k=top_k)
+    def search_chunks(self, query: str, top_k: int, query_filter: Optional[Filter] = None) -> List[ChunkResult]:
+        results = self.retrieval.search(query, top_k=top_k, query_filter=query_filter)
 
         chunks = []
 

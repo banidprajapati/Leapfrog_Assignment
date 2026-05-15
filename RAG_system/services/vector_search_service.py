@@ -1,12 +1,13 @@
-import logging
+from typing import Optional
 
 from qdrant_client import QdrantClient
-from qdrant_client.models import Document, ScoredPoint
+from qdrant_client.models import Document, Filter, ScoredPoint
 from sentence_transformers import SentenceTransformer
 
 from RAG_system.core.config_core import settings
+from RAG_system.core.logging_core import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class VectorSearchHandler:
@@ -19,7 +20,7 @@ class VectorSearchHandler:
         )
         if VectorSearchHandler._embedder is None:
             VectorSearchHandler._embedder = SentenceTransformer(
-                "BAAI/bge-small-en-v1.5",
+                "BAAI/bge-base-en-v1.5",
                 token=settings.HF_TOKEN,
             )
         self.embedder = VectorSearchHandler._embedder
@@ -36,7 +37,11 @@ class VectorSearchHandler:
         return result.points
 
     def hybrid_search(
-        self, query: str, top_k: int = 5, dense_weight: float = 0.7
+        self,
+        query: str,
+        top_k: int = 5,
+        dense_weight: float = 0.7,
+        query_filter: Optional[Filter] = None,
     ) -> list[ScoredPoint]:
         """Hybrid search using dense embeddings and BM25 sparse vectors."""
         query_vector = self.embedder.encode(query, normalize_embeddings=True)
@@ -47,6 +52,7 @@ class VectorSearchHandler:
             query=query_vector.tolist(),
             limit=top_k * 3,
             using="dense",
+            query_filter=query_filter,
         )
         dense_results = dense_response.points
 
@@ -57,6 +63,7 @@ class VectorSearchHandler:
                 query=Document(text=query, model="Qdrant/bm25"),
                 limit=top_k * 3,
                 using="bm25",
+                query_filter=query_filter,
             )
             bm25_results = bm25_response.points
         except Exception as e:

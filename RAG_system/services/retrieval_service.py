@@ -1,11 +1,12 @@
-import logging
+from typing import Optional
 
-from qdrant_client.models import ScoredPoint
+from qdrant_client.models import Filter, ScoredPoint
 
+from RAG_system.core.logging_core import get_logger
 from RAG_system.services.reranker_service import RerankerHandler
 from RAG_system.services.vector_search_service import VectorSearchHandler
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class RetrievalService:
@@ -127,6 +128,7 @@ class RetrievalService:
         query: str,
         top_k: int = 5,
         use_reranking: bool = True,
+        query_filter: Optional[Filter] = None,
     ) -> list[ScoredPoint]:
         """
         End-to-end search pipeline:
@@ -137,28 +139,25 @@ class RetrievalService:
             query: Search query
             top_k: Number of final results to return
             use_reranking: Whether to apply cross-encoder reranking
+            query_filter: Optional Qdrant filter to pre-filter by metadata
 
         Returns:
             List of final results
         """
         try:
-            logger.info(f"Starting search for: {query[:100]}")
-
-            # max 300 | min 40 chunks
             candidate_k = min(max(top_k * 20, 40), 300)
             hybrid_candidates = self.vector_search.hybrid_search(
-                query, top_k=candidate_k
+                query, top_k=candidate_k, query_filter=query_filter
             )
             logger.debug(f"Hybrid search returned {len(hybrid_candidates)} candidates")
 
             if use_reranking:
-                rerank_pool_size = min(len(hybrid_candidates), max(top_k * 3, top_k))
+                rerank_pool_size = min(len(hybrid_candidates), max(top_k * 10, 50))
                 rerank_pool = hybrid_candidates[:rerank_pool_size]
                 final_results = self.rerank_results(query, rerank_pool, top_k=top_k)
             else:
                 final_results = hybrid_candidates[:top_k]
 
-            logger.info(f"Search completed: returned {len(final_results)} results")
             return final_results
 
         except Exception as e:
