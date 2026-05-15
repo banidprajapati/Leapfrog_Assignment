@@ -20,7 +20,7 @@ class VectorSearchHandler:
         )
         if VectorSearchHandler._embedder is None:
             VectorSearchHandler._embedder = SentenceTransformer(
-                "BAAI/bge-small-en-v1.5",
+                "BAAI/bge-base-en-v1.5",
                 token=settings.HF_TOKEN,
             )
         self.embedder = VectorSearchHandler._embedder

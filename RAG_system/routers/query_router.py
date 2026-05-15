@@ -27,12 +27,8 @@ async def query(body: QueryRequest, request: Request) -> QueryResponse:
     rag_service = RAGService(client=request.app.state.openai_client)
 
     try:
-        # Extract filters from query and merge with explicit filters
         extracted = extract_filters(body.query)
-        merged = extracted.copy()
-        if body.filters:
-            merged.update(body.filters)
-        query_filter = _build_filter(merged) if merged else None
+        query_filter = _build_filter(extracted) if extracted else None
         chunks = retrieval_repository.search_chunks(
             query=body.query,
             top_k=body.top_k,

@@ -10,6 +10,29 @@ from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 
 HEADING_TAGS_PATTERN = r"b|h[1-6]|strong|u|em"
 
+BOILERPLATE_KEYWORDS = [
+    "equal opportunity employer", "eeo", "accommodat", "qualified persons with disabilities",
+    "accessibleinterviewing", "reasonable accommodat", "livebetteru", "walmart-paid education",
+    "dodd frank", "truth in lending", "nmls", "criminal conviction", "credit report",
+    "we are committed to", "inclusive work environment", "equal employment opportunity",
+    "company is an equal", "we are proud to be", "m/f/veteran", "disabled veteran",
+    "m/f/d/v", "we celebrate diversity", "our company is committed to",
+    "we believe in equal opportunity", "veteran status", "gender identity",
+    "sexual orientation", "protected veteran", "all qualified applicants",
+    "consideration for employment", "regard to race", "regardless of",
+    "applicants will receive", "without regard to", "employer for everyone",
+    "we are an equal", "affirmative action",
+]
+
+
+def _is_boilerplate(text: str) -> bool:
+    text_lower = text.lower()
+    match_count = sum(1 for kw in BOILERPLATE_KEYWORDS if kw in text_lower)
+    total_words = len(text_lower.split())
+    if total_words < 10:
+        return False
+    return match_count >= 2 or (match_count >= 1 and match_count / max(total_words / 50, 1) > 0.3)
+
 
 class Chunker:
     _embed_models: dict = {}
@@ -79,8 +102,14 @@ class Chunker:
 
         return sections
 
+    def _is_boilerplate_section(self, text: str, heading: str) -> bool:
+        combined = f"{heading} {text}".strip()
+        return _is_boilerplate(combined)
+
     def _chunk_section(self, text: str, heading: str) -> List[str]:
         if not text or len(text.strip()) < 10:
+            return []
+        if self._is_boilerplate_section(text, heading):
             return []
         prefix = f"[{heading}] " if heading else ""
         if len(text) <= self.chunk_size:
@@ -92,7 +121,12 @@ class Chunker:
 
     def split_text(self, text: str) -> List[str]:
         if not text or len(text.strip()) < 400:
-            return [text.strip()] if text.strip() else []
+            cleaned = text.strip() if text.strip() else ""
+            if cleaned and not _is_boilerplate(cleaned):
+                return [cleaned]
+            return []
+        if _is_boilerplate(text):
+            return []
 
         doc = Document(text=text)
         semantic_nodes = self.semantic_splitter.get_nodes_from_documents(

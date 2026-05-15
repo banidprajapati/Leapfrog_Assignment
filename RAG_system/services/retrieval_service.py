@@ -145,9 +145,6 @@ class RetrievalService:
             List of final results
         """
         try:
-            logger.info(f"Starting search for: {query[:100]}")
-
-            # max 300 | min 40 chunks
             candidate_k = min(max(top_k * 20, 40), 300)
             hybrid_candidates = self.vector_search.hybrid_search(
                 query, top_k=candidate_k, query_filter=query_filter
@@ -155,13 +152,12 @@ class RetrievalService:
             logger.debug(f"Hybrid search returned {len(hybrid_candidates)} candidates")
 
             if use_reranking:
-                rerank_pool_size = min(len(hybrid_candidates), max(top_k * 3, top_k))
+                rerank_pool_size = min(len(hybrid_candidates), max(top_k * 10, 50))
                 rerank_pool = hybrid_candidates[:rerank_pool_size]
                 final_results = self.rerank_results(query, rerank_pool, top_k=top_k)
             else:
                 final_results = hybrid_candidates[:top_k]
 
-            logger.info(f"Search completed: returned {len(final_results)} results")
             return final_results
 
         except Exception as e:
