@@ -1,8 +1,37 @@
-from typing import Any, Dict, List
+import re
+from html import unescape
+from typing import Any, Dict, List, Tuple
 
+from bs4 import BeautifulSoup
 from llama_index.core.node_parser import SemanticSplitterNodeParser, SentenceSplitter
 from llama_index.core.schema import Document
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+
+
+HEADING_TAGS_PATTERN = r"b|h[1-6]|strong|u|em"
+
+BOILERPLATE_KEYWORDS = [
+    "equal opportunity employer", "eeo", "accommodat", "qualified persons with disabilities",
+    "accessibleinterviewing", "reasonable accommodat", "livebetteru", "walmart-paid education",
+    "dodd frank", "truth in lending", "nmls", "criminal conviction", "credit report",
+    "we are committed to", "inclusive work environment", "equal employment opportunity",
+    "company is an equal", "we are proud to be", "m/f/veteran", "disabled veteran",
+    "m/f/d/v", "we celebrate diversity", "our company is committed to",
+    "we believe in equal opportunity", "veteran status", "gender identity",
+    "sexual orientation", "protected veteran", "all qualified applicants",
+    "consideration for employment", "regard to race", "regardless of",
+    "applicants will receive", "without regard to", "employer for everyone",
+    "we are an equal", "affirmative action",
+]
+
+
+def _is_boilerplate(text: str) -> bool:
+    text_lower = text.lower()
+    match_count = sum(1 for kw in BOILERPLATE_KEYWORDS if kw in text_lower)
+    total_words = len(text_lower.split())
+    if total_words < 10:
+        return False
+    return match_count >= 2 or (match_count >= 1 and match_count / max(total_words / 50, 1) > 0.3)
 
 
 class Chunker:
@@ -24,10 +53,80 @@ class Chunker:
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
         )
+        self.chunk_size = chunk_size
+
+    def _clean_html(self, html_text: str) -> str:
+        soup = BeautifulSoup(html_text, "html.parser")
+        for tag in soup(["script", "style", "iframe"]):
+            tag.decompose()
+        text = soup.get_text(separator=" ")
+        text = unescape(text)
+        text = re.sub(r"\s+", " ", text).strip()
+        return text
+
+    def _extract_sections(self, html_text: str) -> List[Tuple[str, str]]:
+        pattern = re.compile(
+            rf"<({HEADING_TAGS_PATTERN})(?:\s+[^>]*)?>(.*?)</\1>",
+            re.IGNORECASE | re.DOTALL,
+        )
+
+        raw = []
+        for m in pattern.finditer(html_text):
+            tag_text = re.sub(r"<[^>]+>", "", m.group(2))
+            tag_text = re.sub(r"\s+", " ", tag_text).strip()
+            if tag_text:
+                raw.append((m.start(), m.end(), tag_text))
+
+        if not raw:
+            return [("", self._clean_html(html_text))]
+
+        merged = []
+        for h in raw:
+            if merged and (h[0] - merged[-1][1]) < 30:
+                prev = merged[-1]
+                merged[-1] = (prev[0], h[1], prev[2] + h[2])
+            else:
+                merged.append(h)
+
+        sections = []
+        prev_end = 0
+        for i, (start, end, heading) in enumerate(merged):
+            if i == 0 and start > 0:
+                intro = self._clean_html(html_text[:start])
+                if intro:
+                    sections.append(("", intro))
+
+            next_start = merged[i + 1][0] if i + 1 < len(merged) else len(html_text)
+            content = self._clean_html(html_text[end:next_start])
+            sections.append((heading, content))
+
+        return sections
+
+    def _is_boilerplate_section(self, text: str, heading: str) -> bool:
+        combined = f"{heading} {text}".strip()
+        return _is_boilerplate(combined)
+
+    def _chunk_section(self, text: str, heading: str) -> List[str]:
+        if not text or len(text.strip()) < 10:
+            return []
+        if self._is_boilerplate_section(text, heading):
+            return []
+        prefix = f"[{heading}] " if heading else ""
+        if len(text) <= self.chunk_size:
+            return [prefix + text]
+        sub_nodes = self.size_splitter.get_nodes_from_documents(
+            [Document(text=text)]
+        )
+        return [prefix + n.get_content() for n in sub_nodes]
 
     def split_text(self, text: str) -> List[str]:
         if not text or len(text.strip()) < 400:
-            return [text.strip()] if text.strip() else []
+            cleaned = text.strip() if text.strip() else ""
+            if cleaned and not _is_boilerplate(cleaned):
+                return [cleaned]
+            return []
+        if _is_boilerplate(text):
+            return []
 
         doc = Document(text=text)
         semantic_nodes = self.semantic_splitter.get_nodes_from_documents(
@@ -35,10 +134,9 @@ class Chunker:
         )
 
         capped: List[str] = []
-        chunk_size = self.size_splitter.chunk_size
         for node in semantic_nodes:
             content = node.get_content()
-            if len(content) <= chunk_size:
+            if len(content) <= self.chunk_size:
                 capped.append(content)
             else:
                 sub_nodes = self.size_splitter.get_nodes_from_documents(
@@ -49,9 +147,18 @@ class Chunker:
         return capped
 
     def chunk_job(self, job_data: Dict[str, Any]) -> List[Dict[str, Any]]:
-        """Chunk a job semantically, preserving metadata."""
+        raw_html = job_data.get("Raw Description", job_data.get("Job Description", ""))
         description = job_data.get("Job Description", "")
-        text_chunks = self.split_text(description)
+
+        sections = self._extract_sections(raw_html)
+
+        if len(sections) == 1 and sections[0][0] == "":
+            text_chunks = self.split_text(description)
+        else:
+            text_chunks = []
+            for heading, content in sections:
+                text_chunks.extend(self._chunk_section(content, heading))
+
         return [
             {
                 "chunk_id": f"{job_data['ID']}_chunk_{idx}",

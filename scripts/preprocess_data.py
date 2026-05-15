@@ -27,10 +27,11 @@ def preprocess_jobs(
     cleaned_csv_path: str | None = None,
 ):
     df = load_csv(csv_path)
+    df["Raw Description"] = df["Job Description"]
     df["Job Description"] = df["Job Description"].apply(clean_job_description)
 
     if cleaned_csv_path:
-        df.to_csv(cleaned_csv_path, index=False)
+        df.drop(columns=["Raw Description"]).to_csv(cleaned_csv_path, index=False)
 
     chunker = Chunker(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
     chunks = [c for _, row in df.iterrows() for c in chunker.chunk_job(row.to_dict())]
