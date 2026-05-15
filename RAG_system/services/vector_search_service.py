@@ -1,12 +1,11 @@
-import logging
-
 from qdrant_client import QdrantClient
 from qdrant_client.models import Document, ScoredPoint
 from sentence_transformers import SentenceTransformer
 
 from RAG_system.core.config_core import settings
+from RAG_system.core.logging_core import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class VectorSearchHandler:
