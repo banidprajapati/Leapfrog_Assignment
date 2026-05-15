@@ -7,12 +7,21 @@ from RAG_system.services.rag_service import RAGService
 
 router = APIRouter(prefix="/query", tags=["query"])
 
-retrieval_repository = RetrievalRepository()
-
 
 @router.post("")
 async def query(body: QueryRequest, request: Request) -> QueryResponse:
     rag_service = RAGService(client=request.app.state.openai_client)
+
+    # Use retrieval repository attached to app.state (must be created at startup)
+    try:
+        retrieval_repository: RetrievalRepository = (
+            request.app.state.retrieval_repository
+        )
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail="Retrieval repository not initialized on app.state; ensure application lifespan sets it",
+        )
 
     try:
         chunks = retrieval_repository.search_chunks(

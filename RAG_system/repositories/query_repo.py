@@ -5,8 +5,14 @@ from RAG_system.services.retrieval_service import RetrievalService
 
 
 class RetrievalRepository:
-    def __init__(self):
-        self.retrieval = RetrievalService()
+    def __init__(self, retrieval_service: RetrievalService):
+        # Require a retrieval service instance provided by the application (app.state)
+        if retrieval_service is None:
+            raise ValueError(
+                "RetrievalRepository requires a `retrieval_service` provided by app.state"
+            )
+
+        self.retrieval = retrieval_service
 
     def search_chunks(self, query: str, top_k: int) -> List[ChunkResult]:
         results = self.retrieval.search(query, top_k=top_k)

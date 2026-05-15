@@ -1,21 +1,34 @@
-import logging
-
 from qdrant_client.models import ScoredPoint
 
+from RAG_system.core.logging_core import get_logger
 from RAG_system.services.reranker_service import RerankerHandler
 from RAG_system.services.vector_search_service import VectorSearchHandler
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class RetrievalService:
     """Retrieval service combining hybrid vector search and cross-encoder reranking."""
 
-    def __init__(self):
-        """Initialize retrieval service."""
-        logger.info("Initializing RetrievalService...")
-        self.vector_search = VectorSearchHandler()
-        self.reranker_handler = RerankerHandler()
+    def __init__(
+        self,
+        vector_search: VectorSearchHandler,
+        reranker_handler: RerankerHandler,
+    ):
+        """Initialize retrieval service with shared handlers from app.state.
+
+        Both `vector_search` and `reranker_handler` must be provided by the
+        application startup code (e.g., stored on `app.state`). This enforces
+        a single shared instance for each resource.
+        """
+        if vector_search is None or reranker_handler is None:
+            raise ValueError(
+                "RetrievalService requires `vector_search` and `reranker_handler` to be provided from app.state"
+            )
+
+        logger.info("Initializing RetrievalService with injected handlers...")
+        self.vector_search = vector_search
+        self.reranker_handler = reranker_handler
         logger.info("RetrievalService initialized successfully")
 
     def _extract_text(self, payload) -> str:
