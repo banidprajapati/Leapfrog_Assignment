@@ -5,6 +5,9 @@ Job listing RAG (Retrieval-Augmented Generation) system using FastAPI, Qdrant, a
 ## Setup
 
 ```bash
+git clone git@github.com:banidprajapati/Leapfrog_Assignment.git
+cd Leapfrog_Assignment
+
 uv venv && source .venv/bin/activate && uv sync
 cp .env.example .env   # fill in your keys
 python -m spacy download en_core_web_sm
