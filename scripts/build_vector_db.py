@@ -7,6 +7,7 @@ from qdrant_client.models import (
     Distance,
     Document,
     Modifier,
+    PayloadSchemaType,
     PointStruct,
     SparseIndexParams,
     SparseVectorParams,
@@ -63,6 +64,14 @@ class VectorDBBuilder:
                 )
             },
         )
+
+        for field in ["metadata.level", "metadata.company"]:
+            self.client.create_payload_index(
+                collection_name=COLLECTION_NAME,
+                field_name=field,
+                field_schema=PayloadSchemaType.KEYWORD,
+            )
+            print(f"Created keyword index on {field}")
 
         print(f"Created collection: {COLLECTION_NAME} (dense + BM25 sparse vectors)")
 

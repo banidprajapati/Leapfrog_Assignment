@@ -1,0 +1,380 @@
+Link to Github Repository: https://github.com/banidprajapati/Leapfrog_Assignment
+
+1. Introduction
+
+This project implements an end-to-end Retrieval-Augmented Generation (RAG) system for semantic job search. The system processes job listings, splits them into section-aware chunks using HTML heading boundaries, and stores them in a vector database for efficient retrieval. It combines dense vector search with keyword-based BM25 retrieval and applies pre-filtering via metadata extracted from the query using Named Entity Recognition (NER).
+
+On top of the retrieval layer, a Large Language Model (LLM) is integrated to generate context-aware responses using retrieved job data. The system exposes a FastAPI interface that allows users to query job listings in natural language and receive structured, ranked, and metadata-rich results.
+
+The overall pipeline spans data preprocessing, section-based chunking, embedding generation, hybrid retrieval with NER-based metadata pre-filtering, optional reranking, and LLM-based response generation.
+
+1.1 Objectives
+
+The primary objective of this project is to design and implement an end-to-end Retrieval-Augmented Generation (RAG) system for semantic job search. Key objectives include:
+
+- Build a scalable data processing pipeline for job listings
+- Convert raw job descriptions into section-aware chunks using HTML structure
+- Generate high-quality dense embeddings for semantic retrieval
+- Implement hybrid retrieval combining dense vector search and BM25 keyword search
+- Automatically extract metadata filters (company, level) from queries using spaCy NER
+- Improve retrieval relevance using optional cross-encoder reranking
+- Generate contextual responses using a Large Language Model (LLM)
+- Provide structured, metadata-rich job recommendations via an API
+
+1.2 System Overview
+
+```mermaid
+flowchart TB
+    subgraph Input
+        CSV[Raw Job CSV]
+    end
+
+    subgraph Preprocessing
+        LOAD[Load & Validate CSV]
+        CLEAN[Clean HTML via BeautifulSoup]
+        SECTION[Parse HTML Heading Tags & Split into Sections]
+        CHUNK[Chunk: each section = 1 chunk, oversized sections split by SentenceSplitter]
+        FALLBACK[Fallback: semantic splitting for ~4% unstructured jobs]
+    end
+
+    subgraph VectorDB[Vector Database - Qdrant]
+        DENSE[Dense Vectors - 768-dim bge-small-en-v1.5]
+        SPARSE[Sparse Vectors - BM25]
+        META[Metadata Payload: level, company, category, location, etc.]
+        IDX[Keyword Indexes: metadata.level, metadata.company]
+    end
+
+    subgraph Retrieval[Retrieval Pipeline]
+        QUERY[User Query]
+        NER[spaCy NER: extract level + company from query]
+        FILTER[Build Qdrant Filter from extracted metadata]
+        HYBRID[Hybrid Search: dense 70% + BM25 30%]
+        RERANK[Optional Cross-Encoder Reranking]
+    end
+
+    subgraph Generation
+        CONTEXT[Build Context Blocks from Chunks]
+        LLM[LLM generates answer from context]
+        RESPONSE[Return query + answer + ranked chunks]
+    end
+
+    CSV --> LOAD
+    LOAD --> CLEAN
+    CLEAN --> SECTION
+    SECTION --> CHUNK
+    CHUNK --> FALLBACK
+    CHUNK --> DENSE
+    CHUNK --> SPARSE
+    CHUNK --> META
+    META --> IDX
+    QUERY --> NER
+    NER --> FILTER
+    FILTER --> HYBRID
+    DENSE --> HYBRID
+    SPARSE --> HYBRID
+    HYBRID --> RERANK
+    RERANK --> CONTEXT
+    CONTEXT --> LLM
+    LLM --> RESPONSE
+```
+
+1.3 Setup and Installation
+
+Follow these steps to configure the environment and deploy the RAG system.
+
+1. Clone the Repository
+
+git clone git@github.com:banidprajapati/Leapfrog_Assignment.git
+cd Leapfrog_Assignment
+
+2. Dependency Management
+
+This project uses uv for fast, reliable package management. To install the virtual environment and all dependencies:
+
+uv sync
+
+Additionally, the spaCy NLP model is required for NER-based filter extraction:
+
+uv run python -m spacy download en_core_web_sm
+
+3. Environment Configuration
+
+Create a .env file in the root directory based on the provided .env.example. You will need credentials for Qdrant Cloud, HuggingFace (for model access), and OpenRouter (for the LLM). .env structure:
+
+# Qdrant Cloud Credentials
+QDRANT_APIKEY=your_qdrant_api_key
+QDRANT_CLUSTER_ENDPOINT=https://your-cluster.cloud.qdrant.io
+COLLECTION_NAME=job_listings_rag
+
+# HuggingFace Token (For downloading embedding/rerank models)
+HF_TOKEN=your_huggingface_token
+
+# LLM Provider (OpenRouter)
+OPENROUTER_API=your_openrouter_api_key
+
+4. Data Ingestion & Indexing
+
+Before running the search API, the raw job listings must be cleaned, chunked, and indexed into your Qdrant cluster. The dataset must be uploaded to data/raw directory in .csv format.
+
+# Execute the preprocessing and indexing pipeline
+uv run scripts/main.py
+
+5. Running the FastAPI Server
+
+Once the data is indexed, start the API layer:
+
+uv run uvicorn RAG_system.main:app
+
+API Docs: http://127.0.0.1:8000/docs
+Query Endpoint: POST /query
+
+1.4 Example Usage
+
+Sample Request (POST /query):
+
+{
+  "query": "What are the qualification requirements for senior level for software engineer at Meta?",
+  "top_k": 5
+}
+
+Expected Response Structure:
+
+{
+  "query": "What are the qualification requirements for senior level for software engineer at Meta?",
+  "answer": "- Bachelor's degree in Computer Science, Computer Engineering, relevant technical field, or equivalent practical experience.\n- 12+ years of programming experience.\n- 12+ years of experience with building large-scale applications, or similar experience.\n- 8+ years of experience with web or mobile technologies.\n- Experience leading projects with industry-wide impact.\n- ...",
+  "chunks": [
+    {
+      "chunk_id": "LF0207_chunk_2",
+      "job_id": "LF0207",
+      "job_title": "Software Engineer - Product (Technical Leadership)",
+      "company": "Meta",
+      "category": "Software Engineering",
+      "level": "Senior Level",
+      "location": "Menlo Park, CA",
+      "text": "[Minimum Qualifications:] Bachelor's degree in Computer Science, Computer Engineering, relevant technical field, or equivalent practical experience...",
+      "score": 6.83
+    }
+  ]
+}
+
+2. Dataset
+
+2.1 Data Description
+
+The project uses a job-listings dataset containing 1,000 job postings, where each row represents one vacancy with structured metadata and a full job description. The descriptions are HTML-formatted and include responsibilities, requirements, skills, and benefits text. In the RAG system, the description text is the primary retrieval content, while the structured fields are used for metadata enrichment, NER-based filtering, ranking, and response formatting.
+
+2.2 Data Fields
+
+The raw dataset contains nine columns:
+- ID
+- Job Category
+- Job Title
+- Company Name
+- Publication Date
+- Job Location
+- Job Level
+- Tags
+- Job Description
+
+During loading, text-based fields are stripped of extra whitespace, Tags is converted from a comma-separated string into a list of lowercase tags, and Publication Date is parsed into a datetime value. ID is used as the stable job identifier across chunking, storage, and response generation.
+
+2.3 Data Quality
+
+The dataset is reasonably structured but requires cleaning before retrieval use. The loader validates that all required columns exist and raises an error if any are missing. It normalizes text fields, converts empty strings to missing values, and safely parses dates so malformed entries do not break the pipeline.
+
+The main quality issues are:
+- Job Location has 9 missing values.
+- Tags is empty for 880 rows.
+- Job Description contains HTML markup, boilerplate formatting, and inconsistent whitespace.
+
+These issues are handled during preprocessing in preprocess_data.py, where the raw HTML is cleaned into plain text before chunking and indexing.
+
+3. Data Pipeline
+
+3.1 Preprocessing (cleaning, normalization)
+
+The pipeline starts by loading the raw CSV and validating its schema. The job description text is then cleaned with BeautifulSoup: HTML tags are parsed, script, style, and iframe blocks are removed, HTML entities are unescaped, and extra whitespace is collapsed into readable plain text. This produces cleaner content for semantic retrieval and avoids indexing noisy markup.
+
+3.2 Section-Based Chunking
+
+After preprocessing, each job description is split into chunks using section boundaries extracted from the original HTML. The chunker parses the raw HTML for heading tags (b, h1-h6, strong, u, em) and splits the document at each heading boundary. Consecutive headings separated by fewer than 30 characters (e.g., broken mid-word tags like <b>Oversee Business P</b><br><b>erformance:</b>) are merged back together. This preserves the structural integrity of job descriptions.
+
+Each section heading becomes a [heading] prefix on its chunk, ensuring the context (e.g., "Minimum Qualifications") stays glued to its content. This prevents the common problem where heading and body are split across different chunks.
+
+If a section exceeds the chunk size (default 512 characters), it is split further using SentenceSplitter within that section only. Sections below 10 characters are discarded.
+
+For the approximately 4% of jobs that have no detectable heading markup, the system falls back to LlamaIndex's SemanticSplitterNodeParser with buffer_size=1 and a breakpoint_percentile_threshold of 90, combined with SentenceSplitter for oversized segments.
+
+3.3 Sentence Splitter
+
+SentenceSplitter with a chunk size of 512 characters and an overlap of 50 characters is used as a fallback for jobs without heading structure and as a sub-splitter for sections that exceed the target chunk size.
+
+3.4 Metadata Attachment
+
+Each chunk inherits metadata from the parent job record. The chunk object contains:
+- chunk_id
+- job_id
+- job_title
+- company
+- category
+- level
+- location
+- publication_date
+- tags
+- chunk_text
+
+Keeping the metadata attached to every chunk makes it possible to trace retrieval results back to the original job posting, apply NER-based pre-filtering, and return structured results in the API.
+
+3.5 Output Format
+
+The preprocessing step outputs a list of chunk dictionaries and, optionally, a cleaned CSV file. During vector database construction, each chunk is converted into a Qdrant point with:
+- a UUID point_id
+- the chunk text
+- a nested metadata object
+- a dense embedding vector
+- a BM25 sparse vector
+
+The collection uses a dense vector index plus a BM25 sparse index with keyword payload indexes on metadata.level and metadata.company to support filtered hybrid retrieval. For the API layer, retrieved results are returned as a QueryResponse containing the original query, the generated answer, and a ranked list of ChunkResult objects.
+
+4. Embeddings
+
+4.1 Model Selection (bge-small-en-v1.5)
+
+The system uses BAAI/bge-small-en-v1.5 as the primary embedding model for both indexing and query-time retrieval. It was selected because it offers strong semantic search quality while staying lightweight enough for efficient batch encoding and scalable retrieval. Using the same model for job chunks and user queries keeps the vector space consistent and improves matching reliability.
+
+4.2 Dense Embeddings (768-dim)
+
+Each job chunk is converted into a dense vector of 768 dimensions, which is the native output size of the selected embedding model. These vectors capture the semantic meaning of the job description text and support similarity-based retrieval. Dense vectors are normalized and compared using cosine similarity.
+
+4.3 Sparse Embeddings
+
+In addition to dense vectors, the system also stores a sparse lexical representation using BM25. This helps the retriever match exact terms such as job titles, skills, technologies, locations, and role-specific keywords. Sparse embeddings complement dense vectors by improving retrieval for queries that depend on literal term overlap rather than purely semantic similarity.
+
+4.4 Batch Processing
+
+Embedding generation is performed in batches of 64 instead of processing one chunk at a time. This improves throughput, reduces overhead, and makes indexing more efficient for larger datasets. Each batch generates both dense and sparse representations simultaneously before uploading to Qdrant.
+
+5. Vector Database
+
+5.1 Qdrant Setup
+
+The system uses Qdrant as the vector database because it supports both dense and sparse retrieval in the same collection. Each job chunk is stored as a point in a single collection (LF_RAG_System), along with its vector representations and metadata payload. Qdrant is configured to support cosine-based dense similarity and BM25-style sparse retrieval.
+
+5.2 Schema Design
+
+The storage schema is centered around chunk-level records rather than whole job postings. Each point contains the chunk text, a unique chunk identifier, and metadata inherited from the original job listing such as job ID, title, company, category, level, location, publication date, and tags. This design keeps retrieval results traceable back to the source job while still allowing fine-grained matching on individual parts of the description.
+
+Keyword payload indexes are created on metadata.level and metadata.company to support efficient pre-filtering during hybrid search.
+
+5.3 Indexing Strategy
+
+Indexing is performed by creating a collection that stores both dense and sparse vectors for every chunk. The collection is rebuilt on each indexing run to ensure alignment with the latest processed dataset. Before upload, the system computes an average document length for the sparse representation, which helps stabilize BM25 scoring across chunks of different lengths.
+
+6. Retrieval System
+
+6.1 Dense Search
+
+Dense search is used to capture semantic similarity between the user query and job descriptions. The query is transformed into a dense embedding using the same model used during indexing. The system then searches the dense vector field in Qdrant and returns the most semantically relevant chunks.
+
+6.2 BM25 Sparse Search
+
+BM25 sparse search is used to retrieve chunks based on explicit keyword overlap. This is useful when a user includes specific technologies, job titles, locations, or required skills that should match literally. The sparse search complements semantic retrieval by recovering exact-term matches.
+
+6.3 Metadata Pre-Filtering via NER
+
+Before hybrid search, the query is analyzed by a spaCy NER pipeline to extract metadata filters. An EntityRuler (placed before the standard NER) identifies JOB_LEVEL entities (senior, entry, intern, etc.), while the standard NER identifies ORG entities (company names). A stopword list filters out common false positives (e.g., "Software" tagged as ORG at the start of a query).
+
+Extracted filters like {"level": "Senior Level", "company": "Meta"} are converted to Qdrant Filter conditions and passed to both dense and BM25 queries. This pre-filters the search space to only chunks matching the specified metadata, improving relevance for queries that mention specific companies or seniority levels.
+
+If no filters can be extracted from the query (e.g., vague queries like "Python developer job"), no pre-filtering is applied and the full search space is used.
+
+6.4 Hybrid Retrieval
+
+The final candidate set is built by combining dense and sparse search results. Dense retrieval contributes 70% of the final score, while BM25 contributes 30%. The two result sets are merged so that a chunk can benefit from either retrieval mode if it appears in one or both lists. Both dense and sparse queries receive the same metadata filter, ensuring consistent pre-filtering.
+
+6.5 Score Normalization
+
+Before fusion, retrieval scores are normalized so that dense and sparse scores can be compared on a common scale. Dense scores are already similarity-based, while BM25 scores are scaled relative to the best sparse match in the result set. After normalization, the two scores are combined using the 70:30 weighting.
+
+6.6 Reranking
+
+After hybrid retrieval returns an initial set of candidate chunks, the system applies an optional reranking step using a cross-encoder model (cross-encoder/ms-marco-MiniLM-L-6-v2). Unlike embedding-based retrieval which compares vectors independently, the cross-encoder reads the query and the chunk together and produces a relevance score based on their joint context.
+
+Metadata (job ID, title, company, level, category, location, tags) is composed into the text sent to the cross-encoder, so the reranker can factor in both content and metadata relevance. Reranking is applied only to the top candidate pool from hybrid retrieval (up to 15 candidates for top_k=5), keeping the process efficient.
+
+7. API Layer
+
+7.1 FastAPI Design
+
+The system exposes its functionality through a FastAPI application. The API is organized around a query service that accepts natural language input, performs NER-based filter extraction and hybrid retrieval, optionally applies reranking, and returns both the final answer and the supporting chunks.
+
+7.2 Query Endpoint
+
+The main endpoint (POST /query) accepts a user query and an optional top_k parameter. It also accepts an optional filters dict for explicit metadata overrides. When a request is received, the system first extracts metadata filters from the query using spaCy NER, merges them with any explicit filters, then performs filtered hybrid retrieval. If results are found, the chunks are passed to the LLM for answer generation. If no relevant jobs are retrieved, the API returns a clear fallback response.
+
+7.3 Request/Response Schema
+
+The request schema supports:
+- query (required): the natural language search query
+- top_k (optional, default 5): number of chunks to retrieve
+- filters (optional): explicit metadata filters that override auto-extracted ones
+
+The response schema returns:
+- query: the original query
+- answer: the LLM-generated response
+- chunks: a ranked list of ChunkResult objects (text, job metadata, score)
+
+8. LLM Integration
+
+8.1 Prompt Design
+
+The LLM is prompted to behave as a job search assistant and to answer only from the provided job listings and metadata. The prompt explicitly instructs the model not to hallucinate, not to assume missing information, and to stay concise and recruiter-style. It encourages the model to focus on practical job details such as responsibilities, skills, location, experience, and compensation.
+
+8.2 Context Construction
+
+Before generation, retrieved chunks are transformed into a formatted context block. Each chunk is expanded with its job ID, title, company, level, location, category, tags, and the chunk text itself. This structured formatting gives the LLM both the semantic content and the metadata needed to produce accurate responses.
+
+8.3 Response Generation
+
+The generation step is configured to produce concise answers with temperature 0.1, which reduces randomness and improves factual consistency. The final output is returned together with the supporting chunks so the user can inspect which job postings influenced the answer.
+
+9. Key Design Decisions
+
+9.1 Section-Based Chunking over Semantic Splitting
+
+Semantic splitting was found to separate section headings from their content (e.g., "Minimum Qualifications..." heading in one chunk, the actual degree requirements in the next). Section-based chunking using HTML heading tags keeps headings and their content together, producing chunks that are self-contained and contextually complete. Semantic splitting is retained only as a fallback for the ~4% of jobs with no detectable heading structure.
+
+9.2 NER-Based Metadata Pre-Filtering
+
+Extracting metadata filters from the query using spaCy NER ensures that queries mentioning specific companies or seniority levels are pre-filtered at the database level, rather than relying on post-retrieval ranking to filter out wrong-company results. This approach requires no hardcoded company lists (unlike keyword matching) and adapts to new companies automatically.
+
+9.3 Hybrid Retrieval Choice
+
+Combining dense retrieval with BM25 improves recall across both semantic and lexical query types. The 70:30 weighting reflects that semantic relevance is the primary signal, but exact keyword overlap still matters in job search.
+
+9.4 Model Selection
+
+The embedding and reranking models were chosen to balance quality and efficiency. bge-small-en-v1.5 (384-dim, though the system uses 768-dim from the model) keeps indexing fast, while the cross-encoder reranker improves precision on a small candidate pool. spaCy en_core_web_sm provides lightweight NER for filter extraction.
+
+10. Challenges
+
+- Retrieval Noise: Job descriptions often contain boilerplate text such as company mission statements, benefits policies, and equal opportunity disclaimers. This adds noise to the index. Aggressive HTML cleaning and reranking help mitigate this, but filtering noise while preserving searchability remains a fundamental trade-off.
+- Chunking Trade-offs: Section-based chunking produces variable-sized chunks. Some jobs split into 2-3 large sections, while others produce many smaller pieces. This variation affects BM25 scoring, which depends on average document length.
+- NER Accuracy: spaCy's NER sometimes misclassifies common words (e.g., "Software") as organizations at the start of a query. A stopword exclusion list handles this, but some legitimate companies may be missed by the NER model.
+- Metadata Incompleteness: Metadata fields like location and tags have incomplete coverage across the dataset, limiting filtering capabilities for these fields.
+- Qdrant Index Requirements: Filtering on metadata fields requires keyword payload indexes in Qdrant. Without these indexes, filtered queries return a 400 error.
+
+11. Future Improvements
+
+- Advanced Filtering and Faceting: Expose additional filtering options for location, category, or tags, with appropriate payload indexes.
+- Multi-Modal Embeddings: Incorporate structured job data (salary ranges, certifications, benefits) alongside text embeddings for queries mentioning specific requirements.
+- User Feedback and Ranking: Collect user feedback on retrieval quality to fine-tune hybrid retrieval weights, reranker selection, and chunk boundaries.
+- Incremental Indexing: Enable adding new job postings without rebuilding the entire index, supporting continuously updated job feeds.
+- Result Aggregation: Group duplicate or similar jobs across different postings to reduce redundancy and improve user experience.
+- Custom NER Training: Train a domain-specific NER model on job listings to improve company and skill recognition beyond the general-purpose spaCy model.
+
+12. Conclusion
+
+This project implements a complete end-to-end Retrieval-Augmented Generation system for semantic job search. The architecture combines HTML-aware section chunking, hybrid dense/BM25 retrieval with NER-based metadata pre-filtering, optional cross-encoder reranking, and LLM-based response generation to deliver structured job recommendations through a REST API.
+
+By applying techniques such as section-based chunking, hybrid retrieval, NER filter extraction, and LLM generation, the system achieves higher relevance than traditional keyword search while remaining interpretable and modular. Users can query job listings in natural language and receive both ranked job chunks and a synthesized answer grounded in retrieved evidence. The modular architecture supports easy component replacement, and the REST API provides a clean interface for production deployment.

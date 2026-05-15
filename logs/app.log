@@ -1,0 +1,183 @@
+2026-05-14 11:58:41 - RAG_system.services.retrieval_service - [INFO] Initializing RetrievalService...
+2026-05-14 11:58:47 - RAG_system.services.reranker_service - [INFO] Loading reranker model: cross-encoder/ms-marco-MiniLM-L-6-v2...
+2026-05-14 11:58:56 - RAG_system.services.reranker_service - [INFO] Reranker loaded successfully
+2026-05-14 11:58:56 - RAG_system.services.retrieval_service - [INFO] RetrievalService initialized successfully
+2026-05-14 11:58:56 - RAG_system.main - [INFO] Application Initialized
+2026-05-14 22:19:49 - RAG_system.main - [INFO] Application Initialized
+2026-05-14 22:19:50 - RAG_system.main - [INFO] Loading shared retrieval components
+2026-05-14 22:20:10 - RAG_system.main - [INFO] Application Initialized
+2026-05-14 22:20:10 - RAG_system.main - [INFO] Loading shared retrieval components
+2026-05-14 22:20:50 - RAG_system.main - [INFO] Application Initialized
+2026-05-14 22:20:50 - RAG_system.main - [INFO] Loading shared retrieval components
+2026-05-14 22:20:50 - RAG_system.services.reranker_service - [INFO] Loading reranker model: cross-encoder/ms-marco-MiniLM-L-6-v2...
+2026-05-14 22:20:59 - RAG_system.services.reranker_service - [INFO] Reranker loaded successfully
+2026-05-14 22:21:05 - RAG_system.services.retrieval_service - [INFO] Initializing RetrievalService with injected handlers...
+2026-05-14 22:21:05 - RAG_system.services.retrieval_service - [INFO] RetrievalService initialized successfully
+2026-05-14 22:21:05 - RAG_system.main - [INFO] Application Closing
+2026-05-14 22:21:16 - RAG_system.main - [INFO] Application Initialized
+2026-05-14 22:21:16 - RAG_system.main - [INFO] Loading shared retrieval components
+2026-05-14 22:21:16 - RAG_system.services.reranker_service - [INFO] Loading reranker model: cross-encoder/ms-marco-MiniLM-L-6-v2...
+2026-05-14 22:21:25 - RAG_system.services.reranker_service - [INFO] Reranker loaded successfully
+2026-05-14 22:21:31 - RAG_system.services.retrieval_service - [INFO] Initializing RetrievalService with injected handlers...
+2026-05-14 22:21:31 - RAG_system.services.retrieval_service - [INFO] RetrievalService initialized successfully
+2026-05-14 22:22:14 - RAG_system.services.retrieval_service - [INFO] Starting search for: What are some senior level job offers for Walmart?
+2026-05-14 22:22:16 - RAG_system.services.retrieval_service - [DEBUG] Hybrid search returned 100 candidates
+2026-05-14 22:22:16 - RAG_system.services.reranker_service - [DEBUG] Reranked 15 texts → top 5
+2026-05-14 22:22:16 - RAG_system.services.retrieval_service - [DEBUG] Reranked 15 -> 5 results
+2026-05-14 22:22:16 - RAG_system.services.retrieval_service - [INFO] Search completed: returned 5 results
+2026-05-14 22:23:58 - RAG_system.services.retrieval_service - [INFO] Starting search for: What are some senior level job offers for Walmart?
+2026-05-14 22:23:59 - RAG_system.services.retrieval_service - [DEBUG] Hybrid search returned 40 candidates
+2026-05-14 22:23:59 - RAG_system.services.reranker_service - [DEBUG] Reranked 6 texts → top 2
+2026-05-14 22:23:59 - RAG_system.services.retrieval_service - [DEBUG] Reranked 6 -> 2 results
+2026-05-14 22:23:59 - RAG_system.services.retrieval_service - [INFO] Search completed: returned 2 results
+2026-05-14 22:24:29 - RAG_system.services.retrieval_service - [INFO] Starting search for: What are the requirements for senior level position for Walmart?
+2026-05-14 22:24:30 - RAG_system.services.retrieval_service - [DEBUG] Hybrid search returned 40 candidates
+2026-05-14 22:24:30 - RAG_system.services.reranker_service - [DEBUG] Reranked 6 texts → top 2
+2026-05-14 22:24:30 - RAG_system.services.retrieval_service - [DEBUG] Reranked 6 -> 2 results
+2026-05-14 22:24:30 - RAG_system.services.retrieval_service - [INFO] Search completed: returned 2 results
+2026-05-14 22:25:04 - RAG_system.services.retrieval_service - [INFO] Starting search for: What are some senior level job offers for Walmart?
+2026-05-14 22:25:06 - RAG_system.services.retrieval_service - [DEBUG] Hybrid search returned 40 candidates
+2026-05-14 22:25:06 - RAG_system.services.reranker_service - [DEBUG] Reranked 6 texts → top 2
+2026-05-14 22:25:06 - RAG_system.services.retrieval_service - [DEBUG] Reranked 6 -> 2 results
+2026-05-14 22:25:06 - RAG_system.services.retrieval_service - [INFO] Search completed: returned 2 results
+2026-05-14 22:25:20 - RAG_system.services.retrieval_service - [INFO] Starting search for: What are the requirements for senior level position for Walmart?
+2026-05-14 22:25:21 - RAG_system.services.retrieval_service - [DEBUG] Hybrid search returned 40 candidates
+2026-05-14 22:25:21 - RAG_system.services.reranker_service - [DEBUG] Reranked 6 texts → top 2
+2026-05-14 22:25:21 - RAG_system.services.retrieval_service - [DEBUG] Reranked 6 -> 2 results
+2026-05-14 22:25:21 - RAG_system.services.retrieval_service - [INFO] Search completed: returned 2 results
+2026-05-14 22:36:53 - scripts.build_vector_db - [INFO] Average document length: 103.59
+2026-05-14 22:40:38 - RAG_system.main - [INFO] Application Closing
+2026-05-14 22:40:50 - RAG_system.main - [INFO] Application Initialized
+2026-05-14 22:40:50 - RAG_system.main - [INFO] Loading shared retrieval components
+2026-05-14 22:40:50 - RAG_system.services.reranker_service - [INFO] Loading reranker model: cross-encoder/ms-marco-MiniLM-L-6-v2...
+2026-05-14 22:40:59 - RAG_system.services.reranker_service - [INFO] Reranker loaded successfully
+2026-05-14 22:41:06 - RAG_system.services.retrieval_service - [INFO] Initializing RetrievalService with injected handlers...
+2026-05-14 22:41:06 - RAG_system.services.retrieval_service - [INFO] RetrievalService initialized successfully
+2026-05-14 22:41:26 - RAG_system.services.retrieval_service - [INFO] Starting search for: What are the requirements for senior level position for Walmart?
+2026-05-14 22:41:28 - RAG_system.services.retrieval_service - [DEBUG] Hybrid search returned 40 candidates
+2026-05-14 22:41:28 - RAG_system.services.reranker_service - [DEBUG] Reranked 6 texts → top 2
+2026-05-14 22:41:28 - RAG_system.services.retrieval_service - [DEBUG] Reranked 6 -> 2 results
+2026-05-14 22:41:28 - RAG_system.services.retrieval_service - [INFO] Search completed: returned 2 results
+2026-05-14 22:42:15 - RAG_system.services.retrieval_service - [INFO] Starting search for: What are the minimal qualification for senior level position for Walmart?
+2026-05-14 22:42:16 - RAG_system.services.retrieval_service - [DEBUG] Hybrid search returned 40 candidates
+2026-05-14 22:42:16 - RAG_system.services.reranker_service - [DEBUG] Reranked 6 texts → top 2
+2026-05-14 22:42:16 - RAG_system.services.retrieval_service - [DEBUG] Reranked 6 -> 2 results
+2026-05-14 22:42:16 - RAG_system.services.retrieval_service - [INFO] Search completed: returned 2 results
+2026-05-14 22:42:33 - RAG_system.services.retrieval_service - [INFO] Starting search for: What are the minimal qualification for senior level position for Walmart?
+2026-05-14 22:42:35 - RAG_system.services.retrieval_service - [DEBUG] Hybrid search returned 100 candidates
+2026-05-14 22:42:35 - RAG_system.services.reranker_service - [DEBUG] Reranked 15 texts → top 5
+2026-05-14 22:42:35 - RAG_system.services.retrieval_service - [DEBUG] Reranked 15 -> 5 results
+2026-05-14 22:42:35 - RAG_system.services.retrieval_service - [INFO] Search completed: returned 5 results
+2026-05-14 22:45:06 - RAG_system.services.retrieval_service - [INFO] Starting search for: What are the minimal qualification for senior level position for Meta?
+2026-05-14 22:45:07 - RAG_system.services.retrieval_service - [DEBUG] Hybrid search returned 100 candidates
+2026-05-14 22:45:07 - RAG_system.services.reranker_service - [DEBUG] Reranked 15 texts → top 5
+2026-05-14 22:45:07 - RAG_system.services.retrieval_service - [DEBUG] Reranked 15 -> 5 results
+2026-05-14 22:45:07 - RAG_system.services.retrieval_service - [INFO] Search completed: returned 5 results
+2026-05-14 22:45:59 - RAG_system.services.retrieval_service - [INFO] Starting search for: What are the minimal qualification for senior level for Software Engineering at Meta?
+2026-05-14 22:46:01 - RAG_system.services.retrieval_service - [DEBUG] Hybrid search returned 100 candidates
+2026-05-14 22:46:01 - RAG_system.services.reranker_service - [DEBUG] Reranked 15 texts → top 5
+2026-05-14 22:46:01 - RAG_system.services.retrieval_service - [DEBUG] Reranked 15 -> 5 results
+2026-05-14 22:46:01 - RAG_system.services.retrieval_service - [INFO] Search completed: returned 5 results
+2026-05-14 22:47:24 - RAG_system.main - [INFO] Application Closing
+2026-05-14 22:47:34 - RAG_system.main - [INFO] Application Initialized
+2026-05-14 22:47:34 - RAG_system.main - [INFO] Loading shared retrieval components
+2026-05-14 22:47:34 - RAG_system.services.reranker_service - [INFO] Loading reranker model: cross-encoder/ms-marco-MiniLM-L-6-v2...
+2026-05-14 22:47:43 - RAG_system.services.reranker_service - [INFO] Reranker loaded successfully
+2026-05-14 22:47:50 - RAG_system.services.retrieval_service - [INFO] Initializing RetrievalService with injected handlers...
+2026-05-14 22:47:50 - RAG_system.services.retrieval_service - [INFO] RetrievalService initialized successfully
+2026-05-14 22:47:53 - RAG_system.services.retrieval_service - [INFO] Starting search for: What are the minimal qualification for senior level for Software Engineering at Meta?
+2026-05-14 22:47:55 - RAG_system.services.retrieval_service - [DEBUG] Hybrid search returned 100 candidates
+2026-05-14 22:47:55 - RAG_system.services.reranker_service - [DEBUG] Reranked 15 texts → top 5
+2026-05-14 22:47:55 - RAG_system.services.retrieval_service - [DEBUG] Reranked 15 -> 5 results
+2026-05-14 22:47:55 - RAG_system.services.retrieval_service - [INFO] Search completed: returned 5 results
+2026-05-14 22:48:25 - RAG_system.services.retrieval_service - [INFO] Starting search for: What are the minimal qualification for senior level for Software Engineering at Walmart?
+2026-05-14 22:48:27 - RAG_system.services.retrieval_service - [DEBUG] Hybrid search returned 100 candidates
+2026-05-14 22:48:27 - RAG_system.services.reranker_service - [DEBUG] Reranked 15 texts → top 5
+2026-05-14 22:48:27 - RAG_system.services.retrieval_service - [DEBUG] Reranked 15 -> 5 results
+2026-05-14 22:48:27 - RAG_system.services.retrieval_service - [INFO] Search completed: returned 5 results
+2026-05-14 22:49:10 - RAG_system.services.retrieval_service - [INFO] Starting search for: What are the minimal qualification for senior level for Project Manager at Meta?
+2026-05-14 22:49:12 - RAG_system.services.retrieval_service - [DEBUG] Hybrid search returned 100 candidates
+2026-05-14 22:49:12 - RAG_system.services.reranker_service - [DEBUG] Reranked 15 texts → top 5
+2026-05-14 22:49:12 - RAG_system.services.retrieval_service - [DEBUG] Reranked 15 -> 5 results
+2026-05-14 22:49:12 - RAG_system.services.retrieval_service - [INFO] Search completed: returned 5 results
+2026-05-14 22:49:20 - RAG_system.services.retrieval_service - [INFO] Starting search for: What are the qualification requirements for senior level for Project Manager at Meta?
+2026-05-14 22:49:22 - RAG_system.services.retrieval_service - [DEBUG] Hybrid search returned 100 candidates
+2026-05-14 22:49:22 - RAG_system.services.reranker_service - [DEBUG] Reranked 15 texts → top 5
+2026-05-14 22:49:22 - RAG_system.services.retrieval_service - [DEBUG] Reranked 15 -> 5 results
+2026-05-14 22:49:22 - RAG_system.services.retrieval_service - [INFO] Search completed: returned 5 results
+2026-05-14 22:49:40 - RAG_system.services.retrieval_service - [INFO] Starting search for: What are the qualification requirements for senior level for software engineer at Meta?
+2026-05-14 22:49:42 - RAG_system.services.retrieval_service - [DEBUG] Hybrid search returned 100 candidates
+2026-05-14 22:49:42 - RAG_system.services.reranker_service - [DEBUG] Reranked 15 texts → top 5
+2026-05-14 22:49:42 - RAG_system.services.retrieval_service - [DEBUG] Reranked 15 -> 5 results
+2026-05-14 22:49:42 - RAG_system.services.retrieval_service - [INFO] Search completed: returned 5 results
+2026-05-14 23:01:59 - RAG_system.main - [INFO] Application Closing
+2026-05-14 23:02:09 - RAG_system.main - [INFO] Application Initialized
+2026-05-14 23:02:09 - RAG_system.main - [INFO] Loading shared retrieval components
+2026-05-14 23:02:09 - RAG_system.services.reranker_service - [INFO] Loading reranker model: cross-encoder/ms-marco-MiniLM-L-6-v2...
+2026-05-14 23:02:18 - RAG_system.services.reranker_service - [INFO] Reranker loaded successfully
+2026-05-14 23:02:25 - RAG_system.services.retrieval_service - [INFO] Initializing RetrievalService with injected handlers...
+2026-05-14 23:02:25 - RAG_system.services.retrieval_service - [INFO] RetrievalService initialized successfully
+2026-05-14 23:02:34 - RAG_system.services.retrieval_service - [INFO] Starting search for: What are the qualification requirements for senior level for software engineer at Meta?
+2026-05-14 23:02:35 - RAG_system.services.retrieval_service - [ERROR] Search failed: Unexpected Response: 400 (Bad Request)
+Raw response content:
+b'{"status":{"error":"Bad request: Index required but not found for \\"metadata.level\\" of one of the following types: [keyword]. Help: Create an index for this key or use a different filter."},"time" ...'
+Traceback (most recent call last):
+  File "/home/banid/projects/Leapfrog_Assignment/RAG_system/services/retrieval_service.py", line 166, in search
+    hybrid_candidates = self.vector_search.hybrid_search(
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/banid/projects/Leapfrog_Assignment/RAG_system/services/vector_search_service.py", line 50, in hybrid_search
+    dense_response = self.client.query_points(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/banid/projects/Leapfrog_Assignment/.venv/lib/python3.12/site-packages/qdrant_client/qdrant_client.py", line 423, in query_points
+    return self._client.query_points(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/banid/projects/Leapfrog_Assignment/.venv/lib/python3.12/site-packages/qdrant_client/qdrant_remote.py", line 583, in query_points
+    query_result = self.http.search_api.query_points(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/banid/projects/Leapfrog_Assignment/.venv/lib/python3.12/site-packages/qdrant_client/http/api/search_api.py", line 783, in query_points
+    return self._build_for_query_points(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/banid/projects/Leapfrog_Assignment/.venv/lib/python3.12/site-packages/qdrant_client/http/api/search_api.py", line 181, in _build_for_query_points
+    return self.api_client.request(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/banid/projects/Leapfrog_Assignment/.venv/lib/python3.12/site-packages/qdrant_client/http/api_client.py", line 95, in request
+    return self.send(request, type_)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/banid/projects/Leapfrog_Assignment/.venv/lib/python3.12/site-packages/qdrant_client/http/api_client.py", line 130, in send
+    raise UnexpectedResponse.for_response(response)
+qdrant_client.http.exceptions.UnexpectedResponse: Unexpected Response: 400 (Bad Request)
+Raw response content:
+b'{"status":{"error":"Bad request: Index required but not found for \\"metadata.level\\" of one of the following types: [keyword]. Help: Create an index for this key or use a different filter."},"time" ...'
+2026-05-14 23:05:17 - scripts.build_vector_db - [INFO] Average document length: 103.59
+2026-05-14 23:07:24 - scripts.build_vector_db - [INFO] Average document length: 103.59
+2026-05-14 23:13:32 - RAG_system.main - [INFO] Application Closing
+2026-05-14 23:13:45 - RAG_system.main - [INFO] Application Initialized
+2026-05-14 23:13:45 - RAG_system.main - [INFO] Loading shared retrieval components
+2026-05-14 23:13:45 - RAG_system.services.reranker_service - [INFO] Loading reranker model: cross-encoder/ms-marco-MiniLM-L-6-v2...
+2026-05-14 23:13:54 - RAG_system.services.reranker_service - [INFO] Reranker loaded successfully
+2026-05-14 23:14:00 - RAG_system.services.retrieval_service - [INFO] Initializing RetrievalService with injected handlers...
+2026-05-14 23:14:00 - RAG_system.services.retrieval_service - [INFO] RetrievalService initialized successfully
+2026-05-14 23:14:04 - RAG_system.services.retrieval_service - [INFO] Starting search for: What are the qualification requirements for senior level for software engineer at Meta?
+2026-05-14 23:14:06 - RAG_system.services.retrieval_service - [DEBUG] Hybrid search returned 100 candidates
+2026-05-14 23:14:06 - RAG_system.services.reranker_service - [DEBUG] Reranked 15 texts → top 5
+2026-05-14 23:14:06 - RAG_system.services.retrieval_service - [DEBUG] Reranked 15 -> 5 results
+2026-05-14 23:14:06 - RAG_system.services.retrieval_service - [INFO] Search completed: returned 5 results
+2026-05-14 23:14:33 - RAG_system.services.retrieval_service - [INFO] Starting search for: What are the qualification requirements for entry level for software engineer at Meta?
+2026-05-14 23:14:34 - RAG_system.services.retrieval_service - [DEBUG] Hybrid search returned 0 candidates
+2026-05-14 23:14:34 - RAG_system.services.retrieval_service - [DEBUG] No results to rerank
+2026-05-14 23:14:34 - RAG_system.services.retrieval_service - [INFO] Search completed: returned 0 results
+2026-05-14 23:14:37 - RAG_system.services.retrieval_service - [INFO] Starting search for: What are the qualification requirements for entry level for software engineer at Meta?
+2026-05-14 23:14:38 - RAG_system.services.retrieval_service - [DEBUG] Hybrid search returned 0 candidates
+2026-05-14 23:14:38 - RAG_system.services.retrieval_service - [DEBUG] No results to rerank
+2026-05-14 23:14:38 - RAG_system.services.retrieval_service - [INFO] Search completed: returned 0 results
+2026-05-14 23:14:46 - RAG_system.services.retrieval_service - [INFO] Starting search for: What are the qualification requirements for mid level for software engineer at Meta?
+2026-05-14 23:14:48 - RAG_system.services.retrieval_service - [DEBUG] Hybrid search returned 68 candidates
+2026-05-14 23:14:48 - RAG_system.services.reranker_service - [DEBUG] Reranked 15 texts → top 5
+2026-05-14 23:14:48 - RAG_system.services.retrieval_service - [DEBUG] Reranked 15 -> 5 results
+2026-05-14 23:14:48 - RAG_system.services.retrieval_service - [INFO] Search completed: returned 5 results
+2026-05-14 23:15:34 - RAG_system.services.retrieval_service - [INFO] Starting search for: What are the qualification requirements for senior level for software engineer at Meta?
+2026-05-14 23:15:36 - RAG_system.services.retrieval_service - [DEBUG] Hybrid search returned 100 candidates
+2026-05-14 23:15:36 - RAG_system.services.reranker_service - [DEBUG] Reranked 15 texts → top 5
+2026-05-14 23:15:36 - RAG_system.services.retrieval_service - [DEBUG] Reranked 15 -> 5 results
+2026-05-14 23:15:36 - RAG_system.services.retrieval_service - [INFO] Search completed: returned 5 results
+2026-05-14 23:18:14 - RAG_system.main - [INFO] Application Closing
